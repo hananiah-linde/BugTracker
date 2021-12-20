@@ -27,6 +27,7 @@ builder.Services.AddIdentity<BugTrackerUser, IdentityRole>(options => options.Si
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IBTRolesService, BTRolesService>();
+builder.Services.AddScoped<IBTCompanyInfoService, BTCompanyInfoService>();
 
 builder.Services.AddControllersWithViews();
 
