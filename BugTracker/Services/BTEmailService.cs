@@ -7,13 +7,12 @@ namespace BugTracker.Services;
 
 public class BTEmailService : IEmailSender
 {
-    private readonly MailSettings _mailSettings;
+    //private readonly MailSettings _mailSettings;
     private readonly IConfiguration _config;
 
-    public BTEmailService(IConfiguration config, MailSettings mailSettings)
+    public BTEmailService(IConfiguration config)
     {
         _config = config;
-        _mailSettings = mailSettings;
     }
 
     public async Task SendEmailAsync(string emailTo, string subject, string htmlMessage)
@@ -31,7 +30,8 @@ public class BTEmailService : IEmailSender
         try
         {
             using var smtp = new SmtpClient();
-            smtp.Connect(_mailSettings.Host, _mailSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);
+            //smtp.Connect(_mailSettings.Host, _mailSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);
+            smtp.Connect(_config["MailSettings:Host"], Int32.Parse(_config["MailSettings:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
             smtp.Authenticate(_config["Email:Mail"], _config["Email:Password"]);
 
             await smtp.SendAsync(email);

@@ -1,10 +1,12 @@
 ﻿using BugTracker.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace BugTracker.Services.Interfaces;
 
 public interface IBTRolesService
 {
     public Task<bool> IsUserInRoleAsync(BugTrackerUser user, string roleName);
+    public Task<List<IdentityRole>> GetRolesAsync();
     public Task<IEnumerable<string>> GetUserRolesAsync(BugTrackerUser user);
     public Task<bool> AddUserToRoleAsync(BugTrackerUser user, string roleName);
     public Task<bool> RemoveUserFromRoleAsync(BugTrackerUser user, string roleName);

@@ -20,6 +20,7 @@ public class BTTicketService : IBTTicketService
         _projectService = projectService;
     }
 
+    #region Add New Ticket
     public async Task AddNewTicketAsync(Ticket ticket)
     {
         try
@@ -34,7 +35,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Archive Ticket
     public async Task ArchiveTicketAsync(Ticket ticket)
     {
         try
@@ -49,7 +52,81 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Add Ticket Comment
+    public async Task AddTicketCommentAsync(TicketComment ticketComment)
+    {
+        try
+        {
+            await _context.AddAsync(ticketComment);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+    #endregion
+
+    #region Add Ticket Attachment
+    public async Task AddTicketAttachmentAsync(TicketAttachment ticketAttachment)
+    {
+        try
+        {
+            await _context.AddAsync(ticketAttachment);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+    #endregion
+
+    #region Get Ticket As No Tracking
+    public async Task<Ticket> GetTicketAsNoTrackingAsync(int ticketId)
+    {
+        try
+        {
+            return await _context.Tickets
+                .Include(t => t.DeveloperUser)
+                .Include(t => t.Project)
+                .Include(t => t.TicketPriority)
+                .Include(t => t.TicketStatus)
+                .Include(t => t.TicketType)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == ticketId);
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    } 
+    #endregion
+
+    #region Get Ticket Attachment By Id
+    public async Task<TicketAttachment> GetTicketAttachmentByIdAsync(int ticketAttachmentId)
+    {
+        try
+        {
+            TicketAttachment ticketAttachment = await _context.TicketAttachments
+                                                              .Include(t => t.User)
+                                                              .FirstOrDefaultAsync(t => t.Id == ticketAttachmentId);
+            return ticketAttachment;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    } 
+    #endregion
+
+    #region Assign Ticket
     public async Task AssignTicketAsync(int ticketId, string userId)
     {
         Ticket ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
@@ -78,7 +155,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get all Tickets By Company
     public async Task<List<Ticket>> GetAllTicketsByCompanyAsync(int companyId)
     {
         try
@@ -105,7 +184,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get All Ticket By Priority
     public async Task<List<Ticket>> GetAllTicketsByPriorityAsync(int companyId, string priorityName)
     {
         int priorityId = (await LookupTicketPriorityIdAsync(priorityName)).Value;
@@ -134,7 +215,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get All Tickets By Status
     public async Task<List<Ticket>> GetAllTicketsByStatusAsync(int companyId, string statusName)
     {
         int statusId = (await LookupTicketStatusIdAsync(statusName)).Value;
@@ -163,7 +246,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get All Tickets By Type
     public async Task<List<Ticket>> GetAllTicketsByTypeAsync(int companyId, string typeName)
     {
         int typeId = (await LookupTicketTypeIdAsync(typeName)).Value;
@@ -192,7 +277,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get Archived Tickets
     public async Task<List<Ticket>> GetArchivedTicketsAsync(int companyId)
     {
         try
@@ -206,7 +293,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get Project Tickets By Priority
     public async Task<List<Ticket>> GetProjectTicketsByPriorityAsync(string priorityName, int companyId, int projectId)
     {
         List<Ticket> tickets = new();
@@ -222,14 +311,16 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get Project Tickets By Role
     public async Task<List<Ticket>> GetProjectTicketsByRoleAsync(string role, string userId, int projectId, int companyId)
     {
         List<Ticket> tickets = new();
 
         try
         {
-            tickets = (await GetTicketsByRoleAsync(role,userId,companyId)).Where(t => t.ProjectId == projectId).ToList();
+            tickets = (await GetTicketsByRoleAsync(role, userId, companyId)).Where(t => t.ProjectId == projectId).ToList();
             return tickets;
         }
         catch (Exception)
@@ -238,7 +329,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get Project Tickets By Status
     public async Task<List<Ticket>> GetProjectTicketsByStatusAsync(string statusName, int companyId, int projectId)
     {
         List<Ticket> tickets = new();
@@ -254,7 +347,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get Project Tickets By Type
     public async Task<List<Ticket>> GetProjectTicketsByTypeAsync(string typeName, int companyId, int projectId)
     {
         List<Ticket> tickets = new();
@@ -270,13 +365,24 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get Ticket By Id
     public async Task<Ticket> GetTicketByIdAsync(int ticketId)
     {
         try
         {
-            return await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
-
+            return await _context.Tickets
+                .Include(t => t.DeveloperUser)
+                .Include(t => t.OwnerUser)
+                .Include(t => t.Project)
+                .Include(t => t.TicketPriority)
+                .Include(t => t.TicketStatus)
+                .Include(t => t.TicketType)
+                .Include(t => t.Comments)
+                .Include(t => t.Attachments)
+                .Include(t => t.History)
+                .FirstOrDefaultAsync(t => t.Id == ticketId);
         }
         catch (Exception)
         {
@@ -284,7 +390,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get Ticket Developer
     public async Task<BugTrackerUser> GetTicketDeveloperAsync(int ticketId, int companyId)
     {
         BugTrackerUser developer = new();
@@ -305,7 +413,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get Tickets By Role
     public async Task<List<Ticket>> GetTicketsByRoleAsync(string role, string userId, int companyId)
     {
         List<Ticket> tickets = new();
@@ -316,7 +426,7 @@ public class BTTicketService : IBTTicketService
             {
                 tickets = await GetAllTicketsByCompanyAsync(companyId);
             }
-            else if(role == Roles.Developer.ToString())
+            else if (role == Roles.Developer.ToString())
             {
                 tickets = (await GetAllTicketsByCompanyAsync(companyId)).Where(t => t.DeveloperUserId == userId).ToList();
             }
@@ -338,7 +448,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Get Tickets By User Id
     public async Task<List<Ticket>> GetTicketsByUserIdAsync(string userId, int companyId)
     {
         BugTrackerUser user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -348,16 +460,16 @@ public class BTTicketService : IBTTicketService
         {
             if (await _rolesService.IsUserInRoleAsync(user, Roles.Admin.ToString()))
             {
-                tickets = (await _projectService.GetAllProjectsByCompany(companyId)).SelectMany(p => p.Tickets).ToList();
+                tickets = (await _projectService.GetAllProjectsByCompanyAsync(companyId)).SelectMany(p => p.Tickets).ToList();
             }
             else if (await _rolesService.IsUserInRoleAsync(user, Roles.Developer.ToString()))
             {
-                tickets = (await _projectService.GetAllProjectsByCompany(companyId))
+                tickets = (await _projectService.GetAllProjectsByCompanyAsync(companyId))
                                                 .SelectMany(p => p.Tickets).Where(t => t.DeveloperUserId == userId).ToList();
             }
             else if (await _rolesService.IsUserInRoleAsync(user, Roles.Submitter.ToString()))
             {
-                tickets = (await _projectService.GetAllProjectsByCompany(companyId))
+                tickets = (await _projectService.GetAllProjectsByCompanyAsync(companyId))
                                                 .SelectMany(p => p.Tickets).Where(t => t.OwnerUserId == userId).ToList();
             }
             else if (await _rolesService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString()))
@@ -373,7 +485,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Lookup Ticket Priority Id
     public async Task<int?> LookupTicketPriorityIdAsync(string priorityName)
     {
         try
@@ -386,7 +500,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Lookup Ticket Status Id
     public async Task<int?> LookupTicketStatusIdAsync(string statusName)
     {
         try
@@ -399,7 +515,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Lookup Ticket Type Id
     public async Task<int?> LookupTicketTypeIdAsync(string typeName)
     {
         try
@@ -412,7 +530,9 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
 
+    #region Update Ticket
     public async Task UpdateTicketAsync(Ticket ticket)
     {
         try
@@ -426,4 +546,24 @@ public class BTTicketService : IBTTicketService
             throw;
         }
     }
+    #endregion
+
+    #region Get Unassigned Tickets
+    public async Task<List<Ticket>> GetUnassignedTicketsAsync(int companyId)
+    {
+        List<Ticket> tickets = new();
+
+        try
+        {
+            tickets = (await GetAllTicketsByCompanyAsync(companyId)).Where(t => string.IsNullOrEmpty(t.DeveloperUserId)).ToList();
+            return tickets;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+    #endregion
+
 }

@@ -1,12 +1,12 @@
 ﻿@model BugTracker.Models.Ticket
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Restore";
 }
 
-<h1>Delete</h1>
+<h1>Restore</h1>
 
-<h3>Are you sure you want to delete this?</h3>
+<h3>Are you sure you want to Restore this ticket?</h3>
 <div>
     <h4>Ticket</h4>
     <hr />
@@ -51,37 +51,37 @@
             @Html.DisplayNameFor(model => model.TicketType)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TicketType.Id)
+            @Html.DisplayFor(model => model.TicketType.Name)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.TicketPriority)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TicketPriority.Id)
+            @Html.DisplayFor(model => model.TicketPriority.Name)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.TicketStatus)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TicketStatus.Id)
+            @Html.DisplayFor(model => model.TicketStatus.Name)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.OwnerUser)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.OwnerUser.Id)
+            @Html.DisplayFor(model => model.OwnerUser.FullName)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.DeveloperUser)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DeveloperUser.Id)
+            @Html.DisplayFor(model => model.DeveloperUser.FullName)
         </dd>
     </dl>
     
-    <form asp-action="Delete">
+    <form asp-action="Restore">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <input type="submit" value="Restore" class="btn btn-success" /> |
         <a asp-action="Index">Back to List</a>
     </form>
 </div>

@@ -17,12 +17,15 @@ public class BTProjectService : IBTProjectService
         _rolesService = roleService;
     }
 
+    #region Add New Project
     public async Task AddNewProjectAsync(Project project)
     {
         _context.Add(project);
         await _context.SaveChangesAsync();
     }
+    #endregion
 
+    #region Add Project Manager
     public async Task<bool> AddProjectManagerAsync(string userId, int projectId)
     {
         BugTrackerUser currentPM = await GetProjectManagerAsync(projectId);
@@ -42,7 +45,7 @@ public class BTProjectService : IBTProjectService
 
         try
         {
-            await AddProjectManagerAsync(userId, projectId);
+            await AddUserToProjectAsync(userId, projectId);
             return true;
         }
         catch (Exception ex)
@@ -52,7 +55,9 @@ public class BTProjectService : IBTProjectService
         }
 
     }
+    #endregion
 
+    #region Add User To Project
     public async Task<bool> AddUserToProjectAsync(string userId, int projectId)
     {
         BugTrackerUser user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -84,14 +89,32 @@ public class BTProjectService : IBTProjectService
             return false;
         }
     }
+    #endregion
 
+    #region Archive Project
     public async Task ArchiveProjectAsync(Project project)
     {
-        project.Archived = true;
-        _context.Update(project);
-        await _context.SaveChangesAsync();
-    }
+        try
+        {
+            project.Archived = true;
+            await UpdateProjectAsync(project);
 
+            foreach (Ticket ticket in project.Tickets)
+            {
+                ticket.ArchivedByProject = true;
+                _context.Update(ticket);
+                await _context.SaveChangesAsync();
+            }
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+    #endregion
+
+    #region Get All Project Members Except PM
     public async Task<List<BugTrackerUser>> GetAllProjectMembersExceptPMAsync(int projectId)
     {
         List<BugTrackerUser> developers = await GetProjectMembersByRoleAsync(projectId, Roles.Developer.ToString());
@@ -102,8 +125,10 @@ public class BTProjectService : IBTProjectService
 
         return teamMembers;
     }
+    #endregion
 
-    public async Task<List<Project>> GetAllProjectsByCompany(int companyId)
+    #region Get All Projects By Company
+    public async Task<List<Project>> GetAllProjectsByCompanyAsync(int companyId)
     {
         List<Project> projects = new();
         projects = await _context.Projects.Where(p => p.CompanyId == companyId && p.Archived == false)
@@ -130,38 +155,86 @@ public class BTProjectService : IBTProjectService
                                           .ToListAsync();
         return projects;
     }
+    #endregion
 
+    #region Get All Projects By Priority
     public async Task<List<Project>> GetAllProjectsByPriority(int companyId, string priorityName)
     {
-        List<Project> projects = await GetAllProjectsByCompany(companyId);
+        List<Project> projects = await GetAllProjectsByCompanyAsync(companyId);
         int priorityId = await LookupProjectPriorityId(priorityName);
 
         return projects.Where(p => p.ProjectPriorityId == priorityId).ToList();
 
     }
+    #endregion
 
-    public async Task<List<Project>> GetArchivedProjectsByCompany(int companyId)
+    #region Get Archived Project By Company
+    public async Task<List<Project>> GetArchivedProjectsByCompanyAsync(int companyId)
     {
-        List<Project> projects = await GetAllProjectsByCompany(companyId);
+        try
+        {
+            List<Project> projects = await _context.Projects.Where(p => p.CompanyId == companyId && p.Archived == true)
+                                                              .Include(p => p.Members)
+                                                              .Include(p => p.Tickets)
+                                                                  .ThenInclude(t => t.Comments)
+                                                              .Include(p => p.Tickets)
+                                                                  .ThenInclude(t => t.Attachments)
+                                                              .Include(p => p.Tickets)
+                                                                  .ThenInclude(t => t.History)
+                                                              .Include(p => p.Tickets)
+                                                                  .ThenInclude(t => t.Notifications)
+                                                              .Include(p => p.Tickets)
+                                                                  .ThenInclude(t => t.DeveloperUser)
+                                                              .Include(p => p.Tickets)
+                                                                  .ThenInclude(t => t.OwnerUser)
+                                                              .Include(p => p.Tickets)
+                                                                  .ThenInclude(t => t.TicketStatus)
+                                                              .Include(p => p.Tickets)
+                                                                  .ThenInclude(t => t.TicketPriority)
+                                                              .Include(p => p.Tickets)
+                                                                  .ThenInclude(t => t.TicketType)
+                                                              .Include(p => p.ProjectPriority)
+                                                              .ToListAsync();
+            return projects;
+        }
+        catch (Exception)
+        {
 
-        return projects.Where(p => p.Archived == true).ToList();
+            throw;
+        }
+
     }
+    #endregion
 
+    #region Get Developers On Project
     public Task<List<BugTrackerUser>> GetDevelopersOnProjectAsync(int projectId)
     {
         throw new NotImplementedException();
     }
+    #endregion
 
+    #region Get Project By Id
     public async Task<Project> GetProjectByIdAsync(int projectId, int companyId)
     {
         Project project = await _context.Projects
                                         .Include(p => p.Tickets)
+                                            .ThenInclude(t => t.TicketPriority)
+                                        .Include(p => p.Tickets)
+                                            .ThenInclude(t => t.TicketStatus)
+                                        .Include(p => p.Tickets)
+                                            .ThenInclude(t => t.TicketType)
+                                        .Include(p => p.Tickets)
+                                            .ThenInclude(t => t.DeveloperUser)
+                                        .Include(p => p.Tickets)
+                                            .ThenInclude(t => t.OwnerUser)
                                         .Include(p => p.Members)
                                         .Include(p => p.ProjectPriority)
                                         .FirstOrDefaultAsync(p => p.Id == projectId && p.CompanyId == companyId);
         return project;
     }
+    #endregion
 
+    #region Get Project Manager
     public async Task<BugTrackerUser> GetProjectManagerAsync(int projectId)
     {
         Project project = await _context.Projects
@@ -178,7 +251,9 @@ public class BTProjectService : IBTProjectService
 
         return null;
     }
+    #endregion
 
+    #region Get Project Members By Role
     public async Task<List<BugTrackerUser>> GetProjectMembersByRoleAsync(int projectId, string role)
     {
         Project project = await _context.Projects
@@ -197,12 +272,46 @@ public class BTProjectService : IBTProjectService
 
         return members;
     }
+    #endregion
 
+    #region Get Submitters On Project
     public Task<List<BugTrackerUser>> GetSubmittersOnProjectAsync(int projectId)
     {
         throw new NotImplementedException();
     }
+    #endregion
 
+    #region Get Unassigned Projects
+    public async Task<List<Project>> GetUnassignedProjectsAsync(int companyId)
+    {
+        List<Project> result = new();
+        List<Project> projects = new();
+
+        try
+        {
+            projects = await _context.Projects.Include(p => p.ProjectPriority)
+                                              .Where(p => p.CompanyId == companyId)
+                                              .ToListAsync();
+
+            foreach (Project project in projects)
+            {
+                if ((await GetProjectMembersByRoleAsync(project.Id, nameof(Roles.ProjectManager))).Count == 0)
+                {
+                    result.Add(project);
+                }
+            }
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+
+        return result;
+    } 
+    #endregion
+
+    #region Get User Projects
     public async Task<List<Project>> GetUserProjectsAsync(string userId)
     {
         try
@@ -239,14 +348,42 @@ public class BTProjectService : IBTProjectService
             throw;
         }
     }
+    #endregion
 
+    #region Get Users Not On Project
     public async Task<List<BugTrackerUser>> GetUsersNotOnProjectAsync(int projectId, int companyId)
     {
         List<BugTrackerUser> users = await _context.Users.Where(u => u.Projects.All(p => p.Id != projectId)).ToListAsync();
 
         return users.Where(u => u.CompanyId == companyId).ToList();
     }
+    #endregion
 
+    #region Is Assigned Project Manager
+    public async Task<bool> IsAssignedProjectManagerAsync(string userId, int projectId)
+    {
+        try
+        {
+            string projectManagerId = (await GetProjectManagerAsync(projectId))?.Id;
+
+            if (projectManagerId == userId)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+    #endregion
+
+    #region Is User On Project
     public async Task<bool> IsUserOnProjectAsync(string userId, int projectId)
     {
         Project project = await _context.Projects
@@ -261,13 +398,17 @@ public class BTProjectService : IBTProjectService
         }
         return result;
     }
+    #endregion
 
+    #region Lookup Project Priority Id
     public async Task<int> LookupProjectPriorityId(string priorityName)
     {
         int priorityId = (await _context.ProjectPriorities.FirstOrDefaultAsync(p => p.Name == priorityName)).Id;
         return priorityId;
     }
+    #endregion
 
+    #region Remove Project Manager
     public async Task RemoveProjectManagerAsync(int projectId)
     {
         Project project = await _context.Projects
@@ -289,7 +430,9 @@ public class BTProjectService : IBTProjectService
             throw;
         }
     }
+    #endregion
 
+    #region Remove User From Project
     public async Task RemoveUserFromProjectAsync(string userId, int projectId)
     {
         try
@@ -315,7 +458,9 @@ public class BTProjectService : IBTProjectService
             Console.WriteLine($"**** ERROR **** Error Removing User from project. ---> {ex.Message}");
         }
     }
+    #endregion
 
+    #region Remove Users From Project By Role
     public async Task RemoveUsersFromProjectByRoleAsync(string role, int projectId)
     {
         try
@@ -342,10 +487,37 @@ public class BTProjectService : IBTProjectService
             throw;
         }
     }
+    #endregion
 
+    #region Restore Project
+    public async Task RestoreProjectAsync(Project project)
+    {
+        try
+        {
+            project.Archived = false;
+            await UpdateProjectAsync(project);
+
+            foreach (Ticket ticket in project.Tickets)
+            {
+                ticket.ArchivedByProject = false;
+                _context.Update(ticket);
+                await _context.SaveChangesAsync();
+            }
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+    #endregion
+
+    #region Update Project
     public async Task UpdateProjectAsync(Project project)
     {
         _context.Update(project);
         await _context.SaveChangesAsync();
     }
+    #endregion
+
 }

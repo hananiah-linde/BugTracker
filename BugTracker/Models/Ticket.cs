@@ -28,6 +28,9 @@ public class Ticket
     [DisplayName("Archived")]
     public bool Archived { get; set; }
 
+    [DisplayName("Archived By Project")]
+    public bool ArchivedByProject { get; set; }
+
     [DisplayName("Project")]
     public int ProjectId { get; set; }
 
@@ -53,7 +56,6 @@ public class Ticket
     public virtual TicketStatus TicketStatus { get; set; }
     public virtual BugTrackerUser OwnerUser { get; set; }
     public virtual BugTrackerUser DeveloperUser { get; set; }
-
 
     public virtual ICollection<TicketComment> Comments { get; set; } = new HashSet<TicketComment>();
     public virtual ICollection<TicketAttachment> Attachments { get; set; } = new HashSet<TicketAttachment>();

@@ -49,7 +49,7 @@ namespace BugTracker.Controllers
         // GET: TicketAttachments/Create
         public IActionResult Create()
         {
-            ViewData["Ticketid"] = new SelectList(_context.Tickets, "Id", "Description");
+            ViewData["TicketId"] = new SelectList(_context.Tickets, "Id", "Description");
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
             return View();
         }
@@ -59,7 +59,7 @@ namespace BugTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Ticketid,Created,UserId,Description,Filename,FileData,FileContentType")] TicketAttachment ticketAttachment)
+        public async Task<IActionResult> Create([Bind("Id,TicketId,Created,UserId,Description,Filename,FileData,FileContentType")] TicketAttachment ticketAttachment)
         {
             if (ModelState.IsValid)
             {
@@ -67,7 +67,7 @@ namespace BugTracker.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["Ticketid"] = new SelectList(_context.Tickets, "Id", "Description", ticketAttachment.Ticketid);
+            ViewData["TicketId"] = new SelectList(_context.Tickets, "Id", "Description", ticketAttachment.TicketId);
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", ticketAttachment.UserId);
             return View(ticketAttachment);
         }
@@ -85,7 +85,7 @@ namespace BugTracker.Controllers
             {
                 return NotFound();
             }
-            ViewData["Ticketid"] = new SelectList(_context.Tickets, "Id", "Description", ticketAttachment.Ticketid);
+            ViewData["TicketId"] = new SelectList(_context.Tickets, "Id", "Description", ticketAttachment.TicketId);
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", ticketAttachment.UserId);
             return View(ticketAttachment);
         }
@@ -95,7 +95,7 @@ namespace BugTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Ticketid,Created,UserId,Description,Filename,FileData,FileContentType")] TicketAttachment ticketAttachment)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,TicketId,Created,UserId,Description,Filename,FileData,FileContentType")] TicketAttachment ticketAttachment)
         {
             if (id != ticketAttachment.Id)
             {
@@ -122,7 +122,7 @@ namespace BugTracker.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["Ticketid"] = new SelectList(_context.Tickets, "Id", "Description", ticketAttachment.Ticketid);
+            ViewData["TicketId"] = new SelectList(_context.Tickets, "Id", "Description", ticketAttachment.TicketId);
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", ticketAttachment.UserId);
             return View(ticketAttachment);
         }
