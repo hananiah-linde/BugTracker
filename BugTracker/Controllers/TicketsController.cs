@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using BugTracker.Data;
 using BugTracker.Models;
 using Microsoft.AspNetCore.Identity;
 using BugTracker.Extensions;
@@ -12,9 +11,9 @@ using BugTracker.Models.ViewModels;
 
 namespace BugTracker.Controllers;
 
+[Authorize]
 public class TicketsController : Controller
 {
-    private readonly ApplicationDbContext _context;
     private readonly UserManager<BugTrackerUser> _userManager;
     private readonly IBTProjectService _projectService;
     private readonly IBTLookupService _lookupService;
@@ -22,9 +21,8 @@ public class TicketsController : Controller
     private readonly IBTFileService _fileService;
     private readonly IBTTicketHistoryService _historyService;
 
-    public TicketsController(ApplicationDbContext context, UserManager<BugTrackerUser> userManager, IBTProjectService projectService, IBTLookupService lookupService, IBTTicketService ticketService, IBTFileService fileService, IBTTicketHistoryService historyService)
+    public TicketsController(UserManager<BugTrackerUser> userManager, IBTProjectService projectService, IBTLookupService lookupService, IBTTicketService ticketService, IBTFileService fileService, IBTTicketHistoryService historyService)
     {
-        _context = context;
         _userManager = userManager;
         _projectService = projectService;
         _lookupService = lookupService;
@@ -32,15 +30,6 @@ public class TicketsController : Controller
         _fileService = fileService;
         _historyService = historyService;
     }
-
-    #region GET Index
-    [HttpGet]
-    public async Task<IActionResult> Index()
-    {
-        var applicationDbContext = _context.Tickets.Include(t => t.DeveloperUser).Include(t => t.OwnerUser).Include(t => t.Project).Include(t => t.TicketPriority).Include(t => t.TicketStatus).Include(t => t.TicketType);
-        return View(await applicationDbContext.ToListAsync());
-    }
-    #endregion
 
     #region GET My Tickets
     [HttpGet]
@@ -86,8 +75,8 @@ public class TicketsController : Controller
     #endregion
 
     #region GET Unassigned Tickets
-    [HttpGet]
     [Authorize(Roles = "Admin,ProjectManager")]
+    [HttpGet]
     public async Task<IActionResult> UnassignedTickets()
     {
         int companyId = User.Identity.GetCompanyId().Value;
@@ -117,6 +106,7 @@ public class TicketsController : Controller
     #endregion
 
     #region GET Assign Developer
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpGet]
     public async Task<IActionResult> AssignDeveloper(int id)
     {
@@ -128,13 +118,31 @@ public class TicketsController : Controller
     #endregion
 
     #region POST Assign Developer
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AssignDeveloper(AssignDeveloperViewModel model)
     {
         if (model.DeveloperId != null)
         {
-            await _ticketService.AssignTicketAsync(model.Ticket.Id, model.DeveloperId);
+            BugTrackerUser bugTrackerUser = await _userManager.GetUserAsync(User);
+
+            //old ticket
+            Ticket oldTicket = await _ticketService.GetTicketAsNoTrackingAsync(model.Ticket.Id);
+
+            try
+            {
+                await _ticketService.AssignTicketAsync(model.Ticket.Id, model.DeveloperId);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+            Ticket newTicket = await _ticketService.GetTicketAsNoTrackingAsync(model.Ticket.Id);
+            await _historyService.AddHistoryAsync(oldTicket, newTicket, bugTrackerUser.Id);
+
             return RedirectToAction(nameof(Details), new { id = model.Ticket.Id });
         }
 
@@ -198,15 +206,28 @@ public class TicketsController : Controller
         {
 
 
-            ticket.Created = DateTimeOffset.Now;
-            ticket.OwnerUserId = bugTrackerUser.Id;
+            try
+            {
+                ticket.Created = DateTimeOffset.Now;
+                ticket.OwnerUserId = bugTrackerUser.Id;
 
-            ticket.TicketStatusId = (await _ticketService.LookupTicketStatusIdAsync(nameof(BTTicketStatus.New))).Value;
+                ticket.TicketStatusId = (await _ticketService.LookupTicketStatusIdAsync(nameof(BTTicketStatus.New))).Value;
 
-            await _ticketService.AddNewTicketAsync(ticket);
-            //TODO: Ticket History
-            //TODO: Ticket Notification
-            return RedirectToAction(nameof(Index));
+                await _ticketService.AddNewTicketAsync(ticket);
+
+                Ticket newTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id);
+                await _historyService.AddHistoryAsync(null, newTicket, bugTrackerUser.Id);
+
+                //TODO: Ticket Notification
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
+            return RedirectToAction(nameof(AllTickets));
         }
 
 
@@ -287,7 +308,7 @@ public class TicketsController : Controller
             Ticket newTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id);
             await _historyService.AddHistoryAsync(oldTicket, newTicket, bugTrackerUser.Id);
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(AllTickets));
         }
 
         ViewData["TicketPriorityId"] = new SelectList(await _lookupService.GetTicketPrioritiesAsync(), "Id", "Name", ticket.TicketPriorityId);
@@ -312,6 +333,8 @@ public class TicketsController : Controller
                 ticketComment.Created = DateTimeOffset.Now;
 
                 await _ticketService.AddTicketCommentAsync(ticketComment);
+
+                await _historyService.AddHistoryAsync(ticketComment.TicketId, nameof(TicketComment), ticketComment.UserId);
             }
             catch (Exception)
             {
@@ -320,7 +343,7 @@ public class TicketsController : Controller
             }
         }
 
-        return RedirectToAction("Details", new { id = ticketComment.Id });
+        return RedirectToAction("Details", new { id = ticketComment.TicketId });
     }
     #endregion
 
@@ -333,14 +356,24 @@ public class TicketsController : Controller
 
         if (ModelState.IsValid && ticketAttachment.FormFile != null)
         {
-            ticketAttachment.FileData = await _fileService.ConvertFileToByteArrayAsync(ticketAttachment.FormFile);
-            ticketAttachment.Filename = ticketAttachment.FormFile.FileName;
-            ticketAttachment.FileContentType = ticketAttachment.FormFile.ContentType;
+            try
+            {
+                ticketAttachment.FileData = await _fileService.ConvertFileToByteArrayAsync(ticketAttachment.FormFile);
+                ticketAttachment.Filename = ticketAttachment.FormFile.FileName;
+                ticketAttachment.FileContentType = ticketAttachment.FormFile.ContentType;
 
-            ticketAttachment.Created = DateTimeOffset.Now;
-            ticketAttachment.UserId = _userManager.GetUserId(User);
+                ticketAttachment.Created = DateTimeOffset.Now;
+                ticketAttachment.UserId = _userManager.GetUserId(User);
 
-            await _ticketService.AddTicketAttachmentAsync(ticketAttachment);
+                await _ticketService.AddTicketAttachmentAsync(ticketAttachment);
+
+                await _historyService.AddHistoryAsync(ticketAttachment.TicketId, nameof(TicketAttachment), ticketAttachment.UserId);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
             statusMessage = "Success: New attachment added to Ticket.";
         }
         else
@@ -368,6 +401,7 @@ public class TicketsController : Controller
     #endregion
 
     #region GET Archive
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpGet]
     public async Task<IActionResult> Archive(int? id)
     {
@@ -388,6 +422,7 @@ public class TicketsController : Controller
     #endregion
 
     #region POST Archive
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpPost, ActionName("Archive")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ArchiveConfirmed(int id)
@@ -397,11 +432,12 @@ public class TicketsController : Controller
 
         await _ticketService.UpdateTicketAsync(ticket);
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(AllTickets));
     }
     #endregion
 
     #region GET Restore
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpGet]
     public async Task<IActionResult> Restore(int? id)
     {
@@ -422,6 +458,7 @@ public class TicketsController : Controller
     #endregion
 
     #region POST Restore
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpPost, ActionName("Restore")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RestoreConfirmed(int id)
@@ -431,7 +468,7 @@ public class TicketsController : Controller
 
         await _ticketService.UpdateTicketAsync(ticket);
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(AllTickets));
     }
     #endregion
 

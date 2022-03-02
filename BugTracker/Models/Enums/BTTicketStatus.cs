@@ -1,10 +1,9 @@
-﻿namespace BugTracker.Models.Enums
+﻿namespace BugTracker.Models.Enums;
+
+public enum BTTicketStatus
 {
-    public enum BTTicketStatus
-    {
-        New,
-        Development,
-        Testing,
-        Resolved
-    }
+    New,
+    Development,
+    Testing,
+    Resolved
 }

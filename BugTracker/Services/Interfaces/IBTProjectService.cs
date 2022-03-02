@@ -14,7 +14,7 @@ public interface IBTProjectService
 
     public Task<List<Project>> GetAllProjectsByCompanyAsync(int companyId);
 
-    public Task<List<Project>> GetAllProjectsByPriority(int companyId, string priorityName);
+    public Task<List<Project>> GetAllProjectsByPriorityAsync(int companyId, string priorityName);
 
     public Task<List<BugTrackerUser>> GetAllProjectMembersExceptPMAsync(int projectId);
 

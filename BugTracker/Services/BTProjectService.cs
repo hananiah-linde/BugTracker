@@ -158,7 +158,7 @@ public class BTProjectService : IBTProjectService
     #endregion
 
     #region Get All Projects By Priority
-    public async Task<List<Project>> GetAllProjectsByPriority(int companyId, string priorityName)
+    public async Task<List<Project>> GetAllProjectsByPriorityAsync(int companyId, string priorityName)
     {
         List<Project> projects = await GetAllProjectsByCompanyAsync(companyId);
         int priorityId = await LookupProjectPriorityId(priorityName);
