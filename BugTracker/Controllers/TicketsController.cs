@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+﻿using BugTracker.Extensions;
 using BugTracker.Models;
-using Microsoft.AspNetCore.Identity;
-using BugTracker.Extensions;
 using BugTracker.Models.Enums;
+using BugTracker.Models.ViewModels;
 using BugTracker.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using BugTracker.Models.ViewModels;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace BugTracker.Controllers;
 
@@ -85,7 +85,7 @@ public class TicketsController : Controller
 
         string bugTrackerUserId = _userManager.GetUserId(User);
 
-        if(User.IsInRole(nameof(Roles.Admin)))
+        if (User.IsInRole(nameof(Roles.Admin)))
         {
             return View(tickets);
         }
@@ -95,7 +95,7 @@ public class TicketsController : Controller
 
             foreach (Ticket ticket in tickets)
             {
-                if(await _projectService.IsAssignedProjectManagerAsync(bugTrackerUserId, ticket.ProjectId))
+                if (await _projectService.IsAssignedProjectManagerAsync(bugTrackerUserId, ticket.ProjectId))
                 {
                     pmTickets.Add(ticket);
                 }
@@ -108,10 +108,10 @@ public class TicketsController : Controller
     #region GET Assign Developer
     [Authorize(Roles = "Admin,ProjectManager")]
     [HttpGet]
-    public async Task<IActionResult> AssignDeveloper(int id)
+    public async Task<IActionResult> AssignDeveloper(int ticketId)
     {
         AssignDeveloperViewModel model = new();
-        model.Ticket = await _ticketService.GetTicketByIdAsync(id);
+        model.Ticket = await _ticketService.GetTicketByIdAsync(ticketId);
         model.Developers = new SelectList(await _projectService.GetProjectMembersByRoleAsync(model.Ticket.ProjectId, nameof(Roles.Developer)), "Id", "FullName");
         return View(model);
     }
@@ -478,7 +478,7 @@ public class TicketsController : Controller
         int companyId = User.Identity.GetCompanyId().Value;
 
         return (await _ticketService.GetAllTicketsByCompanyAsync(companyId)).Any(t => t.Id == id);
-    } 
+    }
     #endregion
 
 }

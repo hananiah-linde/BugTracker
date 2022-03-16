@@ -105,7 +105,7 @@ public class BTTicketService : IBTTicketService
 
             throw;
         }
-    } 
+    }
     #endregion
 
     #region Get Ticket Attachment By Id
@@ -123,7 +123,7 @@ public class BTTicketService : IBTTicketService
 
             throw;
         }
-    } 
+    }
     #endregion
 
     #region Assign Ticket

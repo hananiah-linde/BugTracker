@@ -262,7 +262,7 @@ public class BTProjectService : IBTProjectService
 
         List<BugTrackerUser> members = new();
 
-        foreach (var user in project.Members)
+        foreach (BugTrackerUser user in project.Members)
         {
             if (await _rolesService.IsUserInRoleAsync(user, role))
             {
@@ -308,7 +308,7 @@ public class BTProjectService : IBTProjectService
         }
 
         return result;
-    } 
+    }
     #endregion
 
     #region Get User Projects

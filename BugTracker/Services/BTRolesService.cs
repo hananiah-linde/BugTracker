@@ -41,7 +41,7 @@ public class BTRolesService : IBTRolesService
 
             throw;
         }
-    } 
+    }
     #endregion
 
     public async Task<string> GetRoleNameByIdAsync(string roleId)

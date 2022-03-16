@@ -8,11 +8,11 @@ namespace BugTracker.Models;
 public class BugTrackerUser : IdentityUser
 {
     [Required]
-    [Display(Name ="First Name")]
+    [Display(Name = "First Name")]
     public string FirstName { get; set; }
 
     [Required]
-    [Display(Name ="Last Name")]
+    [Display(Name = "Last Name")]
     public string LastName { get; set; }
 
     [NotMapped]
@@ -24,11 +24,11 @@ public class BugTrackerUser : IdentityUser
     public IFormFile AvatarFormFile { get; set; }
 
     [DisplayName("Avatar")]
-    public string AvatarFileName { get; set;}
+    public string AvatarFileName { get; set; }
     public byte[] AvatarFileData { get; set; }
 
     [DisplayName("File Extension")]
-    public string AvatarContentType { get; set;}
+    public string AvatarContentType { get; set; }
 
     public int CompanyId { get; set; }
 

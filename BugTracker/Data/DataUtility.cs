@@ -18,23 +18,23 @@ public static class DataUtility
     public static string GetConnectionString(IConfiguration configuration)
     {
         //The default connection string will come from appSettings like usual
-        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(
+        NpgsqlConnectionStringBuilder connectionStringBuilder = new NpgsqlConnectionStringBuilder(
         configuration.GetConnectionString("DefaultConnection"));
 
         connectionStringBuilder.Password = configuration["DbPassword"];
-        var connectionString = connectionStringBuilder.ConnectionString;
+        string connectionString = connectionStringBuilder.ConnectionString;
         //It will be automatically overwritten if we are running on Heroku
-        var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+        string databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
         return string.IsNullOrEmpty(databaseUrl) ? connectionString : BuildConnectionString(databaseUrl);
     }
 
     public static string BuildConnectionString(string databaseUrl)
     {
         //Provides an object representation of a uniform resource identifier (URI) and easy access to the parts of the URI.
-        var databaseUri = new Uri(databaseUrl);
-        var userInfo = databaseUri.UserInfo.Split(':');
+        Uri databaseUri = new Uri(databaseUrl);
+        string[] userInfo = databaseUri.UserInfo.Split(':');
         //Provides a simple way to create and manage the contents of connection strings used by the NpgsqlConnection class.
-        var builder = new NpgsqlConnectionStringBuilder
+        NpgsqlConnectionStringBuilder builder = new NpgsqlConnectionStringBuilder
         {
             Host = databaseUri.Host,
             Port = databaseUri.Port,
@@ -49,14 +49,14 @@ public static class DataUtility
 
     public static async Task ManageDataAsync(IHost host)
     {
-        using var svcScope = host.Services.CreateScope();
-        var svcProvider = svcScope.ServiceProvider;
+        using IServiceScope svcScope = host.Services.CreateScope();
+        IServiceProvider svcProvider = svcScope.ServiceProvider;
         //Service: An instance of RoleManager
-        var dbContextSvc = svcProvider.GetRequiredService<ApplicationDbContext>();
+        ApplicationDbContext dbContextSvc = svcProvider.GetRequiredService<ApplicationDbContext>();
         //Service: An instance of RoleManager
-        var roleManagerSvc = svcProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        RoleManager<IdentityRole> roleManagerSvc = svcProvider.GetRequiredService<RoleManager<IdentityRole>>();
         //Service: An instance of the UserManager
-        var userManagerSvc = svcProvider.GetRequiredService<UserManager<BugTrackerUser>>();
+        UserManager<BugTrackerUser> userManagerSvc = svcProvider.GetRequiredService<UserManager<BugTrackerUser>>();
         //Migration: This is the programmatic equivalent to Update-Database
         await dbContextSvc.Database.MigrateAsync();
 
@@ -96,7 +96,7 @@ public static class DataUtility
                     new Company() { Name = "Company5", Description="This is default Company 5" }
             };
 
-            var dbCompanies = context.Companies.Select(c => c.Name).ToList();
+            List<string> dbCompanies = context.Companies.Select(c => c.Name).ToList();
             await context.Companies.AddRangeAsync(defaultcompanies.Where(c => !dbCompanies.Contains(c.Name)));
             await context.SaveChangesAsync();
 
@@ -128,7 +128,7 @@ public static class DataUtility
                                                     new ProjectPriority() { Name = BTProjectPriority.Urgent.ToString() },
             };
 
-            var dbProjectPriorities = context.ProjectPriorities.Select(c => c.Name).ToList();
+            List<string> dbProjectPriorities = context.ProjectPriorities.Select(c => c.Name).ToList();
             await context.ProjectPriorities.AddRangeAsync(projectPriorities.Where(c => !dbProjectPriorities.Contains(c.Name)));
             await context.SaveChangesAsync();
 
@@ -202,7 +202,7 @@ public static class DataUtility
                      }
             };
 
-            var dbProjects = context.Projects.Select(c => c.Name).ToList();
+            List<string> dbProjects = context.Projects.Select(c => c.Name).ToList();
             await context.Projects.AddRangeAsync(projects.Where(c => !dbProjects.Contains(c.Name)));
             await context.SaveChangesAsync();
         }
@@ -221,7 +221,7 @@ public static class DataUtility
     public static async Task SeedDefaultUsersAsync(UserManager<BugTrackerUser> userManager)
     {
         //Seed Default Admin User
-        var defaultUser = new BugTrackerUser
+        BugTrackerUser defaultUser = new BugTrackerUser
         {
             UserName = "btadmin1@bugtracker.com",
             Email = "btadmin1@bugtracker.com",
@@ -232,7 +232,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -260,7 +260,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -289,7 +289,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -318,7 +318,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -347,7 +347,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -376,7 +376,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -405,7 +405,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -434,7 +434,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -463,7 +463,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -491,7 +491,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -519,7 +519,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -548,7 +548,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -569,7 +569,7 @@ public static class DataUtility
     public static async Task SeedDemoUsersAsync(UserManager<BugTrackerUser> userManager)
     {
         //Seed Demo Admin User
-        var defaultUser = new BugTrackerUser
+        BugTrackerUser defaultUser = new BugTrackerUser
         {
             UserName = "demoadmin@bugtracker.com",
             Email = "demoadmin@bugtracker.com",
@@ -580,7 +580,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -611,7 +611,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -641,7 +641,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -671,7 +671,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -701,7 +701,7 @@ public static class DataUtility
         };
         try
         {
-            var user = await userManager.FindByEmailAsync(defaultUser.Email);
+            BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
                 await userManager.CreateAsync(defaultUser, "Abc&123!");
@@ -734,7 +734,7 @@ public static class DataUtility
                      new TicketType() { Name = BTTicketType.GeneralTask.ToString() }          // Ticket involves no software development but may involve tasks such as configuations, or hardware setup
                 };
 
-            var dbTicketTypes = context.TicketTypes.Select(c => c.Name).ToList();
+            List<string> dbTicketTypes = context.TicketTypes.Select(c => c.Name).ToList();
             await context.TicketTypes.AddRangeAsync(ticketTypes.Where(c => !dbTicketTypes.Contains(c.Name)));
             await context.SaveChangesAsync();
 
@@ -760,7 +760,7 @@ public static class DataUtility
                     new TicketStatus() { Name = BTTicketStatus.Resolved.ToString()  },           // Ticket remains assigned to the developer but work in now complete
                 };
 
-            var dbTicketStatuses = context.TicketStatuses.Select(c => c.Name).ToList();
+            List<string> dbTicketStatuses = context.TicketStatuses.Select(c => c.Name).ToList();
             await context.TicketStatuses.AddRangeAsync(ticketStatuses.Where(c => !dbTicketStatuses.Contains(c.Name)));
             await context.SaveChangesAsync();
 
@@ -786,7 +786,7 @@ public static class DataUtility
                                                     new TicketPriority() { Name = BTTicketPriority.Urgent.ToString()},
                 };
 
-            var dbTicketPriorities = context.TicketPriorities.Select(c => c.Name).ToList();
+            List<string> dbTicketPriorities = context.TicketPriorities.Select(c => c.Name).ToList();
             await context.TicketPriorities.AddRangeAsync(ticketPriorities.Where(c => !dbTicketPriorities.Contains(c.Name)));
             context.SaveChanges();
 
@@ -917,7 +917,7 @@ public static class DataUtility
                 };
 
 
-            var dbTickets = context.Tickets.Select(c => c.Title).ToList();
+            List<string> dbTickets = context.Tickets.Select(c => c.Title).ToList();
             await context.Tickets.AddRangeAsync(tickets.Where(c => !dbTickets.Contains(c.Title)));
             await context.SaveChangesAsync();
         }

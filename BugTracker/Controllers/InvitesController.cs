@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BugTracker.Data;
+using BugTracker.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using BugTracker.Data;
-using BugTracker.Models;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace BugTracker.Controllers;
 
@@ -18,7 +19,7 @@ public class InvitesController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var applicationDbContext = _context.Invites.Include(i => i.Company).Include(i => i.Invitee).Include(i => i.Invitor).Include(i => i.Project);
+        IIncludableQueryable<Invite, Project> applicationDbContext = _context.Invites.Include(i => i.Company).Include(i => i.Invitee).Include(i => i.Invitor).Include(i => i.Project);
         return View(await applicationDbContext.ToListAsync());
     }
 
@@ -30,7 +31,7 @@ public class InvitesController : Controller
             return NotFound();
         }
 
-        var invite = await _context.Invites
+        Invite invite = await _context.Invites
             .Include(i => i.Company)
             .Include(i => i.Invitee)
             .Include(i => i.Invitor)
@@ -79,7 +80,7 @@ public class InvitesController : Controller
             return NotFound();
         }
 
-        var invite = await _context.Invites.FindAsync(id);
+        Invite invite = await _context.Invites.FindAsync(id);
         if (invite == null)
         {
             return NotFound();
@@ -135,7 +136,7 @@ public class InvitesController : Controller
             return NotFound();
         }
 
-        var invite = await _context.Invites
+        Invite invite = await _context.Invites
             .Include(i => i.Company)
             .Include(i => i.Invitee)
             .Include(i => i.Invitor)
@@ -153,7 +154,7 @@ public class InvitesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var invite = await _context.Invites.FindAsync(id);
+        Invite invite = await _context.Invites.FindAsync(id);
         _context.Invites.Remove(invite);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));

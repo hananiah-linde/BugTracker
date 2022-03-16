@@ -103,7 +103,10 @@ public class BTInviteService : IBTInviteService
 
     public async Task<bool> ValidateInviteCodeAsync(Guid? token)
     {
-        if (token == null) return false;
+        if (token == null)
+        {
+            return false;
+        }
 
         bool result = false;
 

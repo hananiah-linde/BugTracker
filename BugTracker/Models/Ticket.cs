@@ -23,7 +23,7 @@ public class Ticket
 
     [DataType(DataType.Date)]
     [DisplayName("Updated")]
-    public DateTimeOffset? Updated { get; set;}
+    public DateTimeOffset? Updated { get; set; }
 
     [DisplayName("Archived")]
     public bool Archived { get; set; }

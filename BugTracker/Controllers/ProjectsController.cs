@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+﻿using BugTracker.Extensions;
 using BugTracker.Models;
-using BugTracker.Extensions;
+using BugTracker.Models.Enums;
 using BugTracker.Models.ViewModels;
 using BugTracker.Services.Interfaces;
-using BugTracker.Models.Enums;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace BugTracker.Controllers;
 
@@ -47,7 +47,7 @@ public class ProjectsController : Controller
 
         int companyId = User.Identity.GetCompanyId().Value;
 
-        if(User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)))
+        if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)))
         {
             projects = await _companyInfoService.GetAllProjectsAsync(companyId);
         }
@@ -68,7 +68,7 @@ public class ProjectsController : Controller
         return View(projects);
     }
 
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> UnassignedProjects()
     {
@@ -153,7 +153,7 @@ public class ProjectsController : Controller
                 await _projectService.AddUserToProjectAsync(member, model.Project.Id);
             }
 
-            return RedirectToAction("Details", "Projects", new {id = model.Project.Id });
+            return RedirectToAction("Details", "Projects", new { id = model.Project.Id });
         }
 
         return RedirectToAction(nameof(AssignMembers), new { id = model.Project.Id });
@@ -305,7 +305,7 @@ public class ProjectsController : Controller
 
         int companyId = User.Identity.GetCompanyId().Value;
 
-        var project = await _projectService.GetProjectByIdAsync(id.Value, companyId);
+        Project project = await _projectService.GetProjectByIdAsync(id.Value, companyId);
 
 
         if (project == null)
@@ -322,7 +322,7 @@ public class ProjectsController : Controller
     public async Task<IActionResult> ArchiveConfirmed(int id)
     {
         int companyId = User.Identity.GetCompanyId().Value;
-        var project = await _projectService.GetProjectByIdAsync(id, companyId);
+        Project project = await _projectService.GetProjectByIdAsync(id, companyId);
 
         await _projectService.ArchiveProjectAsync(project);
 
@@ -340,7 +340,7 @@ public class ProjectsController : Controller
 
         int companyId = User.Identity.GetCompanyId().Value;
 
-        var project = await _projectService.GetProjectByIdAsync(id.Value, companyId);
+        Project project = await _projectService.GetProjectByIdAsync(id.Value, companyId);
 
 
         if (project == null)
@@ -358,7 +358,7 @@ public class ProjectsController : Controller
     {
         int companyId = User.Identity.GetCompanyId().Value;
 
-        var project = await _projectService.GetProjectByIdAsync(id, companyId);
+        Project project = await _projectService.GetProjectByIdAsync(id, companyId);
         await _projectService.RestoreProjectAsync(project);
 
         return RedirectToAction(nameof(AllProjects));

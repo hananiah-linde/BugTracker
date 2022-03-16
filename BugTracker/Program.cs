@@ -6,9 +6,8 @@ using BugTracker.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -38,7 +37,7 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 
 builder.Services.AddControllersWithViews();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); //Allow datetime without tz to work
 

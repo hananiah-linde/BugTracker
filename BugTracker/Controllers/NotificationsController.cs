@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BugTracker.Data;
+using BugTracker.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using BugTracker.Data;
-using BugTracker.Models;
 
 namespace BugTracker.Controllers;
 
@@ -18,7 +18,7 @@ public class NotificationsController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var applicationDbContext = _context.Notifications.Include(n => n.Recipient).Include(n => n.Sender).Include(n => n.Ticket);
+        Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<Notification, Ticket> applicationDbContext = _context.Notifications.Include(n => n.Recipient).Include(n => n.Sender).Include(n => n.Ticket);
         return View(await applicationDbContext.ToListAsync());
     }
 
@@ -30,7 +30,7 @@ public class NotificationsController : Controller
             return NotFound();
         }
 
-        var notification = await _context.Notifications
+        Notification notification = await _context.Notifications
             .Include(n => n.Recipient)
             .Include(n => n.Sender)
             .Include(n => n.Ticket)
@@ -76,7 +76,7 @@ public class NotificationsController : Controller
             return NotFound();
         }
 
-        var notification = await _context.Notifications.FindAsync(id);
+        Notification notification = await _context.Notifications.FindAsync(id);
         if (notification == null)
         {
             return NotFound();
@@ -130,7 +130,7 @@ public class NotificationsController : Controller
             return NotFound();
         }
 
-        var notification = await _context.Notifications
+        Notification notification = await _context.Notifications
             .Include(n => n.Recipient)
             .Include(n => n.Sender)
             .Include(n => n.Ticket)
@@ -147,7 +147,7 @@ public class NotificationsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var notification = await _context.Notifications.FindAsync(id);
+        Notification notification = await _context.Notifications.FindAsync(id);
         _context.Notifications.Remove(notification);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
