@@ -41,7 +41,7 @@ WebApplication app = builder.Build();
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); //Allow datetime without tz to work
 
-await DataUtility.ManageDataAsync(app);
+await DataUtility.ManageDataAsync(app, builder.Configuration);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
