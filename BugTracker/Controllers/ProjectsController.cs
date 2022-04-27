@@ -228,7 +228,7 @@ public class ProjectsController : Controller
             }
 
             //TODO: Redired to All Projects
-            return RedirectToAction("Index");
+            return RedirectToAction("AllProjects");
         }
 
         return RedirectToAction("Create");
