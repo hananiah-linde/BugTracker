@@ -4,11 +4,13 @@ using BugTracker.Models.ChartModels;
 using BugTracker.Models.Enums;
 using BugTracker.Models.ViewModels;
 using BugTracker.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace BugTracker.Controllers;
 
+[Authorize]
 public class HomeController : Controller
 {
     private readonly IBTCompanyInfoService _companyInfoService;
