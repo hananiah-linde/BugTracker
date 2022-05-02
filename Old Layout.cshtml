@@ -1,0 +1,131 @@
+@*sb-nav-fixed sb-sidenav-toggled sb-nav-fixed*@
+
+@*<body class="sb-nav-fixed">
+
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+        <!-- Navbar Brand-->
+        <a class="navbar-brand ps-3" href="/">Bug Tracker</a>
+        <!-- Sidebar Toggle-->
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="bi bi-layout-text-sidebar-reverse"></i></button>
+        }
+        <!-- Navbar Search-->
+        <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
+            <div class="input-group">
+                <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+                <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="bi bi-search"></i></button>
+            </div>
+        </form>
+        <!-- Navbar-->
+        <partial name="_LoginPartial" />
+    </nav>
+
+    <div id="layoutSidenav">
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav">
+                            <a asp-area="" asp-controller="Home" asp-action="Dashboard" class="nav-link">
+                                <div class="sb-nav-link-icon"><i class="bi bi-speedometer"></i></div>
+                                Dashboard
+                            </a>
+                            <a asp-area="" asp-controller="Companies" asp-action="Index" class="nav-link">
+                                <div class="sb-nav-link-icon"><i class="bi bi-building"></i></div>
+                                Company
+                            </a>
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="bi bi-kanban"></i></div>
+                                Projects
+                                <div class="sb-sidenav-collapse-arrow"><i class="bi bi-chevron-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    @if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)))
+                                    {
+                                        <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="Create">New project...</a>
+                                    }
+                                    @if (!User.IsInRole(nameof(Roles.Admin)))
+                                    {
+                                        <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="MyProjects">My Projects</a>
+                                    }
+                                    <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="AllProjects">All Projects</a>
+                                    <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="ArchivedProjects">Archived Projects</a>
+                                    @if (User.IsInRole(nameof(Roles.Admin)))
+                                    {
+                                        <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="UnassignedProjects">Unassigned Projects</a>
+                                    }
+                                </nav>
+                            </div>
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
+                                <div class="sb-nav-link-icon"><i class="bi bi-clipboard-data"></i></div>
+                                Tickets
+                                <div class="sb-sidenav-collapse-arrow"><i class="bi bi-chevron-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="Create">New ticket...</a>
+                                    @if (!User.IsInRole(nameof(Roles.Admin)))
+                                    {
+                                        <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="MyTickets">My Tickets</a>
+                                    }
+                                    <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="AllTickets">All Tickets</a>
+                                    <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="ArchivedTickets">Archived Tickets</a>
+                                    @if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)))
+                                    {
+                                        <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="UnassignedTickets">Unassigned Tickets</a>
+                                    }
+                                </nav>
+                            </div>
+                            <a asp-area="" asp-controller="Notifications" asp-action="Index" class="nav-link">
+                                <div class="sb-nav-link-icon"><i class="bi bi-bell"></i></div>
+                                Notifications
+                            </a>
+                        </div>
+                    </div>
+                    <div class="sb-sidenav-footer">
+                        <div class="small">
+                            <a href="javascript:void(0);">
+                                @if (bugTrackerUser?.AvatarFileData != null)
+                                {
+                                    <img class="media-object" src="data:image/*;base64,@(Convert.ToBase64String(bugTrackerUser.AvatarFileData))" alt="default avatar" />
+                                }
+                                else
+                                {
+                                    <img class="media-object" src="https://cdn.icon-icons.com/icons2/1378/PNG/512/avatardefault_92824.png" alt="default avatar" style="width:30px;height:30px" />
+                                }
+                            </a>
+                            Logged in as: @bugTrackerUser.FirstName
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        }
+        <div id="layoutSidenav_content">
+            <div class="container-fluid px-4">
+                <main>
+                    @RenderBody()
+                </main>
+            </div>
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <footer class="py-4 bg-light mt-auto">
+                    <div class="container-fluid px-4">
+                        <div class="d-flex align-items-center justify-content-between small">
+                            <div class="text-muted">Copyright &copy; TheBugTracker @DateTimeOffset.Now.Year</div>
+                            <div>
+                                <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            }
+        </div>
+    </div>*@
+
+@*    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="~/js/scripts.js"></script>
+    <script src="~/js/site.js"></script>*@

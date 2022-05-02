@@ -12,132 +12,167 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - TheBugTracker</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
-    <link href="~/css/styles.css" rel="stylesheet">
-    <script src="https://use.fontawesome.com/releases/v6.1.0/js/all.js" crossorigin="anonymous"></script>
+
+    <!-- Load Material Icons from Google Fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp" rel="stylesheet" />
+    <!-- Roboto and Roboto Mono fonts from Google Fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500" rel="stylesheet" />
+    <!-- Load main stylesheet-->
+    <link href="~/css/styles.css" rel="stylesheet" />
 
 
+    @*    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">*@
+    @*<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />*@
+    @*    <link href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" />*@
+    @*    <link href="~/css/styles.css" rel="stylesheet">
+        <script src="https://use.fontawesome.com/releases/v6.1.0/js/all.js" crossorigin="anonymous"></script>*@
 </head>
 
-@*sb-nav-fixed sb-sidenav-toggled sb-nav-fixed*@
-<body class="sb-nav-fixed">
-
-    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-        <!-- Navbar Brand-->
-        <a class="navbar-brand ps-3" href="/">Bug Tracker</a>
-        <!-- Sidebar Toggle-->
-        @if (SignInManager.IsSignedIn(User))
-        {
-            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="bi bi-layout-text-sidebar-reverse"></i></button>
-        }
-        <!-- Navbar Search-->
-        <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-            <div class="input-group">
-                <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="bi bi-search"></i></button>
-            </div>
-        </form>
-        <!-- Navbar-->
-        <partial name="_LoginPartial" />
+<body class="nav-fixed bg-light">
+    <!-- Top app bar navigation menu-->
+    <nav class="top-app-bar navbar navbar-expand navbar-dark bg-dark">
+        <div class="container-fluid px-4">
+            <!-- Drawer toggle button-->
+            <button class="btn btn-lg btn-icon order-1 order-lg-0" id="drawerToggle" href="javascript:void(0);"><i class="material-icons">menu</i></button>
+            <!-- Navbar brand-->
+            <a class="navbar-brand me-auto" href="index.html"><div class="text-uppercase font-monospace">The Bug Tracker</div></a>
+            <!-- Navbar items-->
+            <partial name="_LoginPartial" />
+        </div>
     </nav>
+    <!-- Layout wrapper-->
+    <div id="layoutDrawer">
+        <!-- Layout navigation-->
+        <div id="layoutDrawer_nav">
+            <!-- Drawer navigation-->
+            <nav class="drawer accordion drawer-light bg-white" id="drawerAccordion">
+                <div class="drawer-menu">
+                    <div class="nav">
+                        <!-- Drawer section heading (Account)-->
+                        <div class="drawer-menu-heading d-sm-none">Account</div>
+                        <!-- Drawer link (Notifications)-->
+                        <a class="nav-link d-sm-none" href="#!">
+                            <div class="nav-link-icon"><i class="material-icons">notifications</i></div>
+                            Notifications
+                        </a>
+                        <!-- Drawer link (Messages)-->
+                        <a class="nav-link d-sm-none" href="#!">
+                            <div class="nav-link-icon"><i class="material-icons">mail</i></div>
+                            Messages
+                        </a>
+                        <!-- Divider-->
+                        <div class="drawer-menu-divider d-sm-none"></div>
+                        <!-- Drawer section heading (Company)-->
+                        <div class="drawer-menu-heading">Company</div>
+                        <!-- Drawer link (Home)-->
+                        <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Dashboard">
+                            <div class="nav-link-icon"><i class="material-icons">home</i></div>
+                            Home
+                        </a>
+                        <!-- Drawer link (Projects)-->
+                        <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#collapseProjects" aria-expanded="false" aria-controls="collapseDashboards">
+                            <div class="nav-link-icon"><i class="material-icons">inventory</i></div>
+                            Projects
+                            <div class="drawer-collapse-arrow"><i class="material-icons">expand_more</i></div>
+                        </a>
+                        <!-- Nested drawer nav (Project Links)-->
+                        <div class="collapse" id="collapseProjects" aria-labelledby="headingOne" data-bs-parent="#drawerAccordion">
+                            <nav class="drawer-menu-nested nav">
+                                <a class="nav-link" href="#">Projects Dashboard</a>
+                                @if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)))
+                                {
+                                    <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="Create">New project...</a>
+                                }
+                                @if (!User.IsInRole(nameof(Roles.Admin)))
+                                {
+                                    <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="MyProjects">My Projects</a>
+                                }
+                                <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="AllProjects">All Projects</a>
+                                <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="ArchivedProjects">Archived Projects</a>
+                                @if (User.IsInRole(nameof(Roles.Admin)))
+                                {
+                                    <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="UnassignedProjects">Unassigned Projects</a>
+                                }
+                            </nav>
+                        </div>
 
-    <div id="layoutSidenav">
-        @if (SignInManager.IsSignedIn(User))
-        {
-            <div id="layoutSidenav_nav">
-                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-                    <div class="sb-sidenav-menu">
-                        <div class="nav">
-                            <a asp-area="" asp-controller="Home" asp-action="Dashboard" class="nav-link">
-                                <div class="sb-nav-link-icon"><i class="bi bi-speedometer"></i></div>
-                                Dashboard
-                            </a>
-                            <a asp-area="" asp-controller="Companies" asp-action="Index" class="nav-link">
-                                <div class="sb-nav-link-icon"><i class="bi bi-building"></i></div>
-                                Company
-                            </a>
-                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                                <div class="sb-nav-link-icon"><i class="bi bi-kanban"></i></div>
-                                Projects
-                                <div class="sb-sidenav-collapse-arrow"><i class="bi bi-chevron-down"></i></div>
-                            </a>
-                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav">
-                                    @if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)))
-                                    {
-                                        <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="Create">New project...</a>
-                                    }
-                                    @if (!User.IsInRole(nameof(Roles.Admin)))
-                                    {
-                                        <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="MyProjects">My Projects</a>
-                                    }
-                                    <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="AllProjects">All Projects</a>
-                                    <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="ArchivedProjects">Archived Projects</a>
-                                    @if (User.IsInRole(nameof(Roles.Admin)))
-                                    {
-                                        <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="UnassignedProjects">Unassigned Projects</a>
-                                    }
-                                </nav>
-                            </div>
-                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
-                                <div class="sb-nav-link-icon"><i class="bi bi-clipboard-data"></i></div>
-                                Tickets
-                                <div class="sb-sidenav-collapse-arrow"><i class="bi bi-chevron-down"></i></div>
-                            </a>
-                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="Create">New ticket...</a>
-                                    @if (!User.IsInRole(nameof(Roles.Admin)))
-                                    {
-                                        <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="MyTickets">My Tickets</a>
-                                    }
-                                    <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="AllTickets">All Tickets</a>
-                                    <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="ArchivedTickets">Archived Tickets</a>
-                                    @if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)))
-                                    {
-                                        <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="UnassignedTickets">Unassigned Tickets</a>
-                                    }
-                                </nav>
-                            </div>
-                            <a asp-area="" asp-controller="Notifications" asp-action="Index" class="nav-link">
-                                <div class="sb-nav-link-icon"><i class="bi bi-bell"></i></div>
-                                Notifications
-                            </a>
+                        <!-- Drawer link (Tickets)-->
+                        <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#collapseTickets" aria-expanded="false" aria-controls="collapseDashboards">
+                            <div class="nav-link-icon"><i class="material-icons">local_activity</i></div>
+                            Tickets
+                            <div class="drawer-collapse-arrow"><i class="material-icons">expand_more</i></div>
+                        </a>
+                        <!-- Nested drawer nav (Ticket Links)-->
+                        <div class="collapse" id="collapseTickets" aria-labelledby="headingOne" data-bs-parent="#drawerAccordion">
+                            <nav class="drawer-menu-nested nav">
+                                <a class="nav-link" href="#">Tickets Dashboard</a>
+                                <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="Create">New ticket...</a>
+                                @if (!User.IsInRole(nameof(Roles.Admin)))
+                                {
+                                    <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="MyTickets">My Tickets</a>
+                                }
+                                <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="AllTickets">All Tickets</a>
+                                <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="ArchivedTickets">Archived Tickets</a>
+                                @if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)))
+                                {
+                                    <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="UnassignedTickets">Unassigned Tickets</a>
+                                }
+                            </nav>
+                        </div>
+
+                        <!-- Divider-->
+                        <div class="drawer-menu-divider"></div>
+                    </div>
+                </div>
+                <!-- Drawer footer        -->
+                <div class="drawer-footer border-top">
+                    <div class="d-flex align-items-center">
+                        <i class="material-icons text-muted">account_circle</i>
+                        <div class="ms-3">
+                            <div class="caption">Logged in as:</div>
+                            <div class="small fw-500">@bugTrackerUser.FirstName</div>
                         </div>
                     </div>
-                    <div class="sb-sidenav-footer">
-                        <div class="small">Logged in as: @bugTrackerUser.FirstName</div>
-                    </div>
-                </nav>
-            </div>
-        }
-        <div id="layoutSidenav_content">
-            <div class="container-fluid px-4">
-                <main>
+                </div>
+            </nav>
+        </div>
+        <!-- Layout content-->
+        <div id="layoutDrawer_content">
+            <!-- Main page content-->
+            <main>
+                <div class="container-xl p-5">
                     @RenderBody()
-                </main>
-            </div>
-            @if (SignInManager.IsSignedIn(User))
-            {
-                <footer class="py-4 bg-light mt-auto">
-                    <div class="container-fluid px-4">
-                        <div class="d-flex align-items-center justify-content-between small">
-                            <div class="text-muted">Copyright &copy; TheBugTracker @DateTimeOffset.Now.Year</div>
-                            <div>
-                                <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                            </div>
+                </div>
+            </main>
+            <!-- Footer-->
+            <!-- Min-height is set inline to match the height of the drawer footer-->
+            <footer class="py-4 mt-auto border-top" style="min-height: 74px">
+                <div class="container-xl px-5">
+                    <div class="d-flex flex-column flex-sm-row align-items-center justify-content-sm-between small">
+                        <div class="me-sm-2">Copyright &copy; <a href="https://hananiahlinde.com" target="_blank">hananiahlinde.com</a> @DateTimeOffset.Now.Year</div>
+                        <div class="d-flex ms-sm-2">
+                            @*                            <a class="text-decoration-none" href="#!">Privacy Policy</a>
+                                <div class="mx-1">&middot;</div>
+                                <a class="text-decoration-none" href="#!">Terms &amp; Conditions</a>*@
                         </div>
                     </div>
-                </footer>
-            }
+                </div>
+            </footer>
         </div>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!-- Load Bootstrap JS bundle-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <!-- Load global scripts-->
+    <script type="module" src="~/js/material.js"></script>
     <script src="~/js/scripts.js"></script>
-    <script src="~/js/site.js"></script>
+    <!-- Load Prism plugin scripts-->
+    <script src="~/js/prism.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
+
 </html>
