@@ -1,4 +1,6 @@
-﻿namespace BugTracker.Models.ViewModels;
+﻿using BugTracker.Models.ChartModels;
+
+namespace BugTracker.Models.ViewModels;
 
 public class DashboardViewModel
 {

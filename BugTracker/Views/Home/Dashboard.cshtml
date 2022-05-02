@@ -291,8 +291,10 @@
 <!-- Projects vs Developers -->
 <script>
 
-var ctx = document.getElementById('dashboardBarChart').getContext('2d');
-var myBarChart = new Chart(ctx, {
+
+
+let ctx = document.getElementById('dashboardBarChart').getContext('2d');
+let myBarChart = new Chart(ctx, {
     type: 'bar',
     data: {
         labels: ['January', 'February', 'March', 'April', 'May', 'June'],
