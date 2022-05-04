@@ -96,11 +96,11 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public async Task<JsonResult> AmCharts()
+    public async Task<JsonResult> ChartJs()
     {
 
-        AmChartData amChartData = new();
-        List<AmItem> amItems = new();
+        ChartJsData amChartData = new();
+        List<ChartJsItem> amItems = new();
 
         int companyId = User.Identity.GetCompanyId().Value;
 
@@ -108,7 +108,7 @@ public class HomeController : Controller
 
         foreach (Project project in projects)
         {
-            AmItem item = new();
+            ChartJsItem item = new();
 
             item.Project = project.Name;
             item.Tickets = project.Tickets.Count;

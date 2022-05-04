@@ -32,6 +32,25 @@ public class ProjectsController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> Dashboard()
+    {
+        List<Project> projects = new();
+
+        int companyId = User.Identity.GetCompanyId().Value;
+
+        if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)))
+        {
+            projects = await _companyInfoService.GetAllProjectsAsync(companyId);
+        }
+        else
+        {
+            projects = await _projectService.GetAllProjectsByCompanyAsync(companyId);
+        }
+
+        return View(projects);
+    }
+
+    [HttpGet]
     public async Task<IActionResult> MyProjects()
     {
         string userId = _userManager.GetUserId(User);

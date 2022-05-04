@@ -1,9 +1,13 @@
-﻿@using BugTracker.Models.Enums
+﻿@using BugTracker.Extensions
+@using BugTracker.Models.Enums
+@using BugTracker.Services.Interfaces
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<BugTrackerUser> SignInManager
 @inject UserManager<BugTrackerUser> UserManager
+@inject IBTCompanyInfoService CompanyService
 @{
     BugTrackerUser bugTrackerUser = await UserManager.GetUserAsync(User);
+    var company = await CompanyService.GetCompanyInfoByIdAsync(bugTrackerUser.CompanyId);
 }
 
 <!DOCTYPE html>
@@ -11,7 +15,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TheBugTracker</title>
+    <title>@ViewData["Title"] - BugTracker</title>
 
     <!-- Load Material Icons from Google Fonts-->
     <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp" rel="stylesheet" />
@@ -36,7 +40,7 @@
             <!-- Drawer toggle button-->
             <button class="btn btn-lg btn-icon order-1 order-lg-0" id="drawerToggle" href="javascript:void(0);"><i class="material-icons">menu</i></button>
             <!-- Navbar brand-->
-            <a class="navbar-brand me-auto" href="index.html"><div class="text-uppercase font-monospace">The Bug Tracker</div></a>
+            <a class="navbar-brand me-auto" href="#"><div class="text-uppercase font-monospace">@company.Name</div></a>
             <!-- Navbar items-->
             <partial name="_LoginPartial" />
         </div>
@@ -79,7 +83,7 @@
                         <!-- Nested drawer nav (Project Links)-->
                         <div class="collapse" id="collapseProjects" aria-labelledby="headingOne" data-bs-parent="#drawerAccordion">
                             <nav class="drawer-menu-nested nav">
-                                <a class="nav-link" href="#">Projects Dashboard</a>
+                                <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="Dashboard">Projects Dashboard</a>
                                 @if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)))
                                 {
                                     <a class="nav-link" asp-area="" asp-controller="Projects" asp-action="Create">New project...</a>
