@@ -1,0 +1,93 @@
+﻿@model IEnumerable<BugTracker.Models.Project>
+
+@using BugTracker.Models.Enums
+@using BugTracker.Services.Interfaces
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<BugTrackerUser> UserManager
+@inject IBTRolesService RolesService
+
+@{
+    ViewData["Title"] = "Dashboard";
+    BugTrackerUser bugTrackerUser = await UserManager.GetUserAsync(User);
+}
+
+
+<!-- Page Title -->
+<div class="row justify-content-between align-items-center mb-5">
+    <div class="col flex-shrink-0 mb-5 mb-md-0">
+        <h1 class="display-4 mb-0">Dashboard</h1>
+        <div class="text-muted">Project overview &amp; summary</div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-6 col-xl-3 mb-5">
+        <div class="card h-100 border-2 border-dashed ripple-primary">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <i class="material-icons text-primary mb-2">create_new_folder</i>
+                <a class="stretched-link fst-button text-decoration-none d-inline-flex align-items-center" asp-area="" asp-controller="Projects" asp-action="Create">Create Project</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="card card-raised">
+    <div class="card-header bg-primary text-white px-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="me-4">
+                <h2 class="card-title text-white mb-0">Projects</h2>
+                <div class="card-subtitle">Details</div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <!-- Simple DataTables example-->
+        <table id="datatablesSimple">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Priority</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @* Table body *@
+                @foreach (var project in Model.OrderByDescending(d => d.EndDate))
+                {
+                    <tr>
+                        <td>@project.Name</td>
+                        <td>@project.Description</td>
+                        @if (project.Archived == true)
+                        {
+                            <td><span class="badge bg-danger rounded-pill">Archived</span></td>
+                        }
+                        else
+                        {
+                            <td><span class="badge bg-success rounded-pill">Active</span></td>
+                        }
+                        <td><span style="font-size: small">@project.StartDate.ToString("MM/dd/yyyy")</span></td>
+                        <td><span style="font-size: small">@project.EndDate.ToString("MM/dd/yyyy")</span></td>
+                        <td><span class="badge rounded-pill bg-dark">@project.ProjectPriority?.Name</span></td>
+                        <td>
+                            <a class="btn btn-sm btn-text-secondary" asp-action="Details" asp-controller="Projects" asp-route-id="@project.Id">View</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section scripts {
+
+<!-- Load Simple DataTables Scripts-->
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+<script src="~/js/datatables/datatables-simple-demo.js"></script>
+
+}

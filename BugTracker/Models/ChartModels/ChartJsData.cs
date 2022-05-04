@@ -1,11 +1,11 @@
 ﻿namespace BugTracker.Models.ChartModels;
 
-public class AmChartData
+public class ChartJsData
 {
-    public AmItem[] Data { get; set; }
+    public ChartJsItem[] Data { get; set; }
 }
 
-public class AmItem
+public class ChartJsItem
 {
     public string Project { get; set; }
     public int Tickets { get; set; }

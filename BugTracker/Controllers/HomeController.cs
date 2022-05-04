@@ -5,27 +5,41 @@ using BugTracker.Models.Enums;
 using BugTracker.Models.ViewModels;
 using BugTracker.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace BugTracker.Controllers;
 
-[Authorize]
 public class HomeController : Controller
 {
     private readonly IBTCompanyInfoService _companyInfoService;
     private readonly IBTProjectService _projectService;
+    private readonly SignInManager<BugTrackerUser> _signInManager;
 
-    public HomeController(IBTCompanyInfoService companyInfoService, IBTProjectService projectService)
+    public HomeController(IBTCompanyInfoService companyInfoService, IBTProjectService projectService, SignInManager<BugTrackerUser> signInManager)
     {
         _companyInfoService = companyInfoService;
         _projectService = projectService;
+        _signInManager = signInManager;
+    }
+
+
+    [HttpGet]
+    public IActionResult SplashPage()
+    {
+        if(_signInManager.IsSignedIn(User))
+        {
+            RedirectToAction("Dashboard");
+        }
+
+        return View();
     }
 
     [HttpGet]
     public IActionResult Index()
     {
-        return View();
+        return RedirectToAction("SplashPage");
     }
 
     [HttpGet]
@@ -36,7 +50,7 @@ public class HomeController : Controller
         int companyId = User.Identity.GetCompanyId().Value;
 
         model.Company = await _companyInfoService.GetCompanyInfoByIdAsync(companyId);
-        model.Projects = (await _companyInfoService.GetAllProjectsAsync(companyId)).Where(p => p.Archived == false).ToList();
+        model.Projects = (await _companyInfoService.GetAllProjectsAsync(companyId)).ToList();
         model.Tickets = model.Projects.SelectMany(p => p.Tickets).Where(t => t.Archived == false).ToList();
         model.Members = model.Company.Members.ToList();
 
@@ -82,11 +96,11 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public async Task<JsonResult> AmCharts()
+    public async Task<JsonResult> ChartJs()
     {
 
-        AmChartData amChartData = new();
-        List<AmItem> amItems = new();
+        ChartJsData amChartData = new();
+        List<ChartJsItem> amItems = new();
 
         int companyId = User.Identity.GetCompanyId().Value;
 
@@ -94,7 +108,7 @@ public class HomeController : Controller
 
         foreach (Project project in projects)
         {
-            AmItem item = new();
+            ChartJsItem item = new();
 
             item.Project = project.Name;
             item.Tickets = project.Tickets.Count;

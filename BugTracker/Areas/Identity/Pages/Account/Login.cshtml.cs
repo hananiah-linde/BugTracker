@@ -15,11 +15,13 @@ namespace BugTracker.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<BugTrackerUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly IConfiguration _config;
 
-        public LoginModel(SignInManager<BugTrackerUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<BugTrackerUser> signInManager, ILogger<LoginModel> logger, IConfiguration config)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _config = config;
         }
 
         /// <summary>
@@ -85,7 +87,7 @@ namespace BugTracker.Areas.Identity.Pages.Account
                 ModelState.AddModelError(string.Empty, ErrorMessage);
             }
 
-            returnUrl ??= Url.Content("~/Home/Dashboard");
+            returnUrl ??= Url.Content("~/");
 
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
@@ -105,7 +107,28 @@ namespace BugTracker.Areas.Identity.Pages.Account
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                if (Input.Email == "admin@placeholder.com")
+                {
+                    Input.Email = _config["DemoAdminUsername"];
+                    Input.Password = _config["DemoUserPassword"];
+                }
+                else if (Input.Email == "pm@placeholder.com")
+                {
+                    Input.Email = _config["DemoPMUsername"];
+                    Input.Password = _config["DemoUserPassword"];
+                }
+                else if (Input.Email == "dev@placeholder.com")
+                {
+                    Input.Email = _config["DemoDevUsername"];
+                    Input.Password = _config["DemoUserPassword"];
+                }
+                else if (Input.Email == "submitter@placeholder.com")
+                {
+                    Input.Email = _config["DemoSubmitterUsername"];
+                    Input.Password = _config["DemoUserPassword"];
+                }
+
+                    var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");

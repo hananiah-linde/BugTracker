@@ -64,13 +64,13 @@ public static class DataUtility
         await SeedRolesAsync(roleManagerSvc);
         await SeedDefaultCompaniesAsync(dbContextSvc);
         await SeedDefaultUsersAsync(userManagerSvc, configuration);
-        //await SeedDemoUsersAsync(userManagerSvc);
+        await SeedDemoUsersAsync(userManagerSvc, configuration);
         await SeedDefaultTicketTypeAsync(dbContextSvc);
         await SeedDefaultTicketStatusAsync(dbContextSvc);
         await SeedDefaultTicketPriorityAsync(dbContextSvc);
         await SeedDefaultProjectPriorityAsync(dbContextSvc);
         await SeedDefautProjectsAsync(dbContextSvc);
-        await SeedDefautTicketsAsync(dbContextSvc);
+        //await SeedDefautTicketsAsync(dbContextSvc);
     }
 
 
@@ -89,11 +89,8 @@ public static class DataUtility
         try
         {
             IList<Company> defaultcompanies = new List<Company>() {
-                    new Company() { Name = "Company1", Description="This is default Company 1" },
-                    new Company() { Name = "Company2", Description="This is default Company 2" },
-                    new Company() { Name = "Company3", Description="This is default Company 3" },
-                    new Company() { Name = "Company4", Description="This is default Company 4" },
-                    new Company() { Name = "Company5", Description="This is default Company 5" }
+                    new Company() { Name = "BugTracker", Description="We sell the Bugtracker application as a service" },
+                    new Company() { Name = "Linde IT Services", Description="We help make digital aspirations a reality – transforming your business, accelerating outcomes, and driving growth." },
             };
 
             List<string> dbCompanies = context.Companies.Select(c => c.Name).ToList();
@@ -101,11 +98,8 @@ public static class DataUtility
             await context.SaveChangesAsync();
 
             //Get company Ids
-            company1Id = context.Companies.FirstOrDefault(p => p.Name == "Company1").Id;
-            company2Id = context.Companies.FirstOrDefault(p => p.Name == "Company2").Id;
-            company3Id = context.Companies.FirstOrDefault(p => p.Name == "Company3").Id;
-            company4Id = context.Companies.FirstOrDefault(p => p.Name == "Company4").Id;
-            company5Id = context.Companies.FirstOrDefault(p => p.Name == "Company5").Id;
+            company1Id = context.Companies.FirstOrDefault(p => p.Name == "BugTracker").Id;
+            company2Id = context.Companies.FirstOrDefault(p => p.Name == "Linde IT Services").Id;
         }
         catch (Exception ex)
         {
@@ -121,7 +115,7 @@ public static class DataUtility
     {
         try
         {
-            IList<Models.ProjectPriority> projectPriorities = new List<ProjectPriority>() {
+            IList<ProjectPriority> projectPriorities = new List<ProjectPriority>() {
                                                     new ProjectPriority() { Name = BTProjectPriority.Low.ToString() },
                                                     new ProjectPriority() { Name = BTProjectPriority.Medium.ToString() },
                                                     new ProjectPriority() { Name = BTProjectPriority.High.ToString() },
@@ -158,8 +152,8 @@ public static class DataUtility
                      new Project()
                      {
                          CompanyId = company1Id,
-                         Name = "Build a Personal Porfolio",
-                         Description="Single page html, css & javascript page.  Serves as a landing page for candidates and contains a bio and links to all applications and challenges." ,
+                         Name = "BugTracker Company Invite Feature",
+                         Description="Add feature to allow inviting new companies to use BugTracker via email" ,
                          StartDate = new DateTime(2021,8,20),
                          EndDate = new DateTime(2021,8,20).AddMonths(1),
                          ProjectPriorityId = priorityLow
@@ -168,7 +162,7 @@ public static class DataUtility
                      {
                          CompanyId = company2Id,
                          Name = "Build a supplemental Blog Web Application",
-                         Description="Candidate's custom built web application using .Net Core with MVC, a postgres database and hosted in a heroku container.  The app is designed for the candidate to create, update and maintain a live blog site.",
+                         Description="Candidate's custom built web application using .Net Core with MVC, a postgres database and hosted in a heroku container. The app is designed for the candidate to create, update and maintain a live blog site.",
                          StartDate = new DateTime(2021,8,20),
                          EndDate = new DateTime(2021,8,20).AddMonths(4),
                          ProjectPriorityId = priorityMedium
@@ -176,8 +170,8 @@ public static class DataUtility
                      new Project()
                      {
                          CompanyId = company1Id,
-                         Name = "Build an Issue Tracking Web Application",
-                         Description="A custom designed .Net Core application with postgres database.  The application is a multi tennent application designed to track issue tickets' progress.  Implemented with identity and user roles, Tickets are maintained in projects which are maintained by users in the role of projectmanager.  Each project has a team and team members.",
+                         Name = "BugTracker Notification Feature",
+                         Description="Add a notification feature to BugTracker that will notify us when a company joins the platform.",
                          StartDate = new DateTime(2021,8,20),
                          EndDate = new DateTime(2021,8,20).AddMonths(6),
                          ProjectPriorityId = priorityHigh
@@ -193,9 +187,9 @@ public static class DataUtility
                      },
                     new Project()
                      {
-                         CompanyId = company1Id,
+                         CompanyId = company2Id,
                          Name = "Build a Movie Information Web Application",
-                         Description="A custom designed .Net Core application with postgres database.  An API based application allows users to input and import movie posters and details including cast and crew information.",
+                         Description="A custom designed .Net Core application with postgres database. An API based application allows users to input and import movie posters and details including cast and crew information.",
                          StartDate = new DateTime(2021,8,20),
                          EndDate = new DateTime(2021,8,20).AddMonths(3),
                          ProjectPriorityId = priorityHigh
@@ -249,24 +243,24 @@ public static class DataUtility
         }
     }
 
-    public static async Task SeedDemoUsersAsync(UserManager<BugTrackerUser> userManager)
+    public static async Task SeedDemoUsersAsync(UserManager<BugTrackerUser> userManager, IConfiguration configuration)
     {
         //Seed Demo Admin User
         BugTrackerUser defaultUser = new BugTrackerUser
         {
-            UserName = "demoadmin@bugtracker.com",
-            Email = "demoadmin@bugtracker.com",
-            FirstName = "Demo",
-            LastName = "Admin",
+            UserName = configuration["DemoAdminUsername"],
+            Email = configuration["DemoAdminUsername"],
+            FirstName = "Hananiah",
+            LastName = "Linde",
             EmailConfirmed = true,
-            CompanyId = company1Id
+            CompanyId = company2Id
         };
         try
         {
             BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
-                await userManager.CreateAsync(defaultUser, "Abc&123!");
+                await userManager.CreateAsync(defaultUser, configuration["DemoUserPassword"]);
                 await userManager.AddToRoleAsync(defaultUser, Roles.Admin.ToString());
                 await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
 
@@ -285,10 +279,10 @@ public static class DataUtility
         //Seed Demo ProjectManager User
         defaultUser = new BugTrackerUser
         {
-            UserName = "demopm@bugtracker.com",
-            Email = "demopm@bugtracker.com",
-            FirstName = "Demo",
-            LastName = "ProjectManager",
+            UserName = configuration["DemoPMUsername"],
+            Email = configuration["DemoPMUsername"],
+            FirstName = "Paul",
+            LastName = "Paulson",
             EmailConfirmed = true,
             CompanyId = company2Id
         };
@@ -297,7 +291,7 @@ public static class DataUtility
             BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
-                await userManager.CreateAsync(defaultUser, "Abc&123!");
+                await userManager.CreateAsync(defaultUser, configuration["DemoUserPassword"]);
                 await userManager.AddToRoleAsync(defaultUser, Roles.ProjectManager.ToString());
                 await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
             }
@@ -315,10 +309,10 @@ public static class DataUtility
         //Seed Demo Developer User
         defaultUser = new BugTrackerUser
         {
-            UserName = "demodev@bugtracker.com",
-            Email = "demodev@bugtracker.com",
-            FirstName = "Demo",
-            LastName = "Developer",
+            UserName = configuration["DemoDevUsername"],
+            Email = configuration["DemoDevUsername"],
+            FirstName = "David",
+            LastName = "Davidson",
             EmailConfirmed = true,
             CompanyId = company2Id
         };
@@ -327,7 +321,7 @@ public static class DataUtility
             BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
-                await userManager.CreateAsync(defaultUser, "Abc&123!");
+                await userManager.CreateAsync(defaultUser, configuration["DemoUserPassword"]);
                 await userManager.AddToRoleAsync(defaultUser, Roles.Developer.ToString());
                 await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
             }
@@ -345,10 +339,10 @@ public static class DataUtility
         //Seed Demo Submitter User
         defaultUser = new BugTrackerUser
         {
-            UserName = "demosub@bugtracker.com",
-            Email = "demosub@bugtracker.com",
-            FirstName = "Demo",
-            LastName = "Submitter",
+            UserName = configuration["DemoSubmitterUsername"],
+            Email = configuration["DemoSubmitterUsername"],
+            FirstName = "Sam",
+            LastName = "Samson",
             EmailConfirmed = true,
             CompanyId = company2Id
         };
@@ -357,7 +351,7 @@ public static class DataUtility
             BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
-                await userManager.CreateAsync(defaultUser, "Abc&123!");
+                await userManager.CreateAsync(defaultUser, configuration["DemoUserPassword"]);
                 await userManager.AddToRoleAsync(defaultUser, Roles.Submitter.ToString());
                 await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
             }
@@ -375,10 +369,10 @@ public static class DataUtility
         //Seed Demo New User
         defaultUser = new BugTrackerUser
         {
-            UserName = "demonew@bugtracker.com",
-            Email = "demonew@bugtracker.com",
-            FirstName = "Demo",
-            LastName = "NewUser",
+            UserName = configuration["DemoNewUserUsername"],
+            Email = configuration["DemoNewUserUsername"],
+            FirstName = "John",
+            LastName = "Johnson",
             EmailConfirmed = true,
             CompanyId = company2Id
         };
@@ -387,7 +381,7 @@ public static class DataUtility
             BugTrackerUser user = await userManager.FindByEmailAsync(defaultUser.Email);
             if (user == null)
             {
-                await userManager.CreateAsync(defaultUser, "Abc&123!");
+                await userManager.CreateAsync(defaultUser, configuration["DemoUserPassword"]);
                 await userManager.AddToRoleAsync(defaultUser, Roles.Submitter.ToString());
                 await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
             }
