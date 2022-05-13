@@ -6,6 +6,7 @@
 
 @inject UserManager<BugTrackerUser> UserManager
 @inject IBTRolesService RolesService
+@inject IBTProjectService ProjectService
 
 @{
     ViewData["Title"] = "Dashboard";
@@ -27,6 +28,87 @@
             <div class="card-body d-flex flex-column align-items-center justify-content-center">
                 <i class="material-icons text-primary mb-2">create_new_folder</i>
                 <a class="stretched-link fst-button text-decoration-none d-inline-flex align-items-center" asp-area="" asp-controller="Projects" asp-action="Create">Create Project</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row gx-5">
+    <div class="col-xxl-3 col-md-6 mb-5">
+        <div class="card card-raised bg-secondary text-white">
+            <div class="card-body px-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="me-2">
+                        <div class="display-5 text-white">@Model.Where(p => p.Archived == false).Count()</div>
+                        <div class="card-text">Active Projects</div>
+                    </div>
+                    <div class="icon-circle bg-white-50 text-secondary"><i class="material-icons">published_with_changes</i></div>
+                </div>
+                <div class="card-text">
+                    <div class="d-inline-flex align-items-center">
+                        <div class="d-inline-flex align-items-center">
+                            <a class="stretched-link text-decoration-none text-white" asp-area="" asp-controller="Projects" asp-action="AllProjects">Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xxl-3 col-md-6 mb-5">
+        <div class="card card-raised bg-info text-white">
+            <div class="card-body px-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="me-2">
+                        <div class="display-5 text-white">@Model.Where(p => p.Archived == true).Count()</div>
+                        <div class="card-text">Archived Projects</div>
+                    </div>
+                    <div class="icon-circle bg-white-50 text-secondary"><i class="material-icons">folder</i></div>
+                </div>
+                <div class="card-text">
+                    <div class="d-inline-flex align-items-center">
+                        <a class="stretched-link text-decoration-none text-white" asp-area="" asp-controller="Projects" asp-action="ArchivedProjects">Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xxl-3 col-md-6 mb-5">
+        <div class="card card-raised bg-warning text-white">
+            <div class="card-body px-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="me-2">
+                        <div class="display-5 text-white">@Model.Where(p => p.Archived == false).Count()</div>
+                        <div class="card-text">Unassigned Projects</div>
+                    </div>
+                    <div class="icon-circle bg-white-50 text-secondary"><i class="material-icons">rule</i></div>
+                </div>
+                <div class="card-text">
+                    <div class="d-inline-flex align-items-center">
+                        <div class="d-inline-flex align-items-center">
+                            <a class="stretched-link text-decoration-none text-white" asp-area="" asp-controller="Projects" asp-action="AllProjects">Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xxl-3 col-md-6 mb-5">
+        <div class="card card-raised bg-info text-white">
+            <div class="card-body px-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="me-2">
+                        <div class="display-5 text-white">@Model.Where(p => p.Archived == false).Count()</div>
+                        <div class="card-text">Total Projects</div>
+                    </div>
+                    <div class="icon-circle bg-white-50 text-secondary"><i class="material-icons">functions</i></div>
+                </div>
+                <div class="card-text">
+                    <div class="d-inline-flex align-items-center">
+                        <div class="d-inline-flex align-items-center">
+                            <a class="stretched-link text-decoration-none text-white" asp-area="" asp-controller="Projects" asp-action="AllProjects">Details</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -75,7 +157,24 @@
                         <td><span style="font-size: small">@project.EndDate.ToString("MM/dd/yyyy")</span></td>
                         <td><span class="badge rounded-pill bg-dark">@project.ProjectPriority?.Name</span></td>
                         <td>
-                            <a class="btn btn-sm btn-text-secondary" asp-action="Details" asp-controller="Projects" asp-route-id="@project.Id">View</a>
+                            @{
+                                bool isProjectPM = (await ProjectService.GetProjectManagerAsync(project.Id))?.Id == bugTrackerUser.Id;
+                            }
+                            <div class="d-flex flex-column">
+                                <a class="btn btn-sm btn-text-secondary" asp-action="Details" asp-controller="Projects" asp-route-id="@project.Id">View</a>
+                                @if (User.IsInRole(nameof(Roles.Admin)) || isProjectPM)
+                                {
+                                    <a class="btn btn-sm btn-text-secondary" asp-action="Edit" asp-controller="Projects" asp-route-id="@project.Id">Edit</a>
+                                    @if (project.Archived)
+                                    {
+                                        <a class="btn btn-sm btn-text-secondary" asp-action="Restore" asp-controller="Projects" asp-route-id="@project.Id">Restore</a>
+                                    }
+                                    else
+                                    {
+                                        <a class="btn btn-sm btn-text-secondary" asp-action="Archive" asp-controller="Projects" asp-route-id="@project.Id">Archive</a>
+                                    }
+                                }
+                            </div>
                         </td>
                     </tr>
                 }
